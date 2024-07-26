@@ -1,113 +1,126 @@
-import Image from "next/image";
+// This tells Next.js that this is a client component
+// This allows you to use hooks like useState and useEffect.
+"use client";
+
+import { useState, useEffect } from "react";
+import { FaEdit, FaTrash, FaSave, FaPlusCircle, FaCheckCircle } from "react-icons/fa";
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    // Initialize state variable 'tasks' with an empty array to store the list of tasks
+    const [tasks, setTasks] = useState([]);
+    // Initialize state variable 'newTask' with an empty string to store the new task input value
+    const [newTask, setNewTask] = useState("");
+    // Initialize state variable 'editingTask' with null to track the task being edited
+    const [editingTask, setEditingTask] = useState(null);
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+    // useEffect hook to run a function when the component mounts (on initial render)
+    useEffect(() => {
+        // Ensure the code runs only in the browser
+        if (typeof window !== "undefined") {
+            // Retrieve tasks from localStorage and parse them into a JavaScript object
+            const storedTasks = JSON.parse(localStorage.getItem("tasks"));
+            // If there are stored tasks, update the 'tasks' state with these tasks
+            if (storedTasks) {
+                setTasks(storedTasks);
+            }
+        }
+    }, []); // Empty dependency array ensures this runs only once when the component mounts
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+    // useEffect hook to run a function whenever the 'tasks' state changes
+    useEffect(() => {
+        // Ensure the code runs only in the browser
+        if (typeof window !== "undefined") {
+            // Convert the 'tasks' state to a JSON string and save it in localStorage
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+    }, [tasks]); // Dependency array with 'tasks' ensures this runs every time 'tasks' changes
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+    // Function to add a new task to the list
+    const addTask = () => {
+        // Check if the new task input is not just whitespace
+        if (newTask.trim()) {
+            // Update the 'tasks' state by appending the new task object with a unique ID and the input value
+            setTasks([...tasks, { text: newTask, id: Date.now(), completed: false }]);
+            // Reset the 'newTask' state to an empty string
+            setNewTask("");
+        }
+    };
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+    // Function to delete a task from the list based on its ID
+    const deleteTask = (id) => {
+        // Update the 'tasks' state by filtering out the task with the given ID
+        setTasks(tasks.filter((task) => task.id !== id));
+    };
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    // Function to start editing a task
+    const startEditing = (task) => {
+        // Set 'editingTask' state to the task object that is being edited
+        setEditingTask(task);
+        // Set 'newTask' state to the text of the task being edited, so it appears in the input field
+        setNewTask(task.text);
+    };
+
+    // Function to update an existing task
+    const updateTask = () => {
+        // Check if there is a task being edited
+        if (editingTask) {
+            // Update the 'tasks' state by mapping over the tasks and updating the text of the task being edited
+            setTasks(tasks.map((task) => (task.id === editingTask.id ? { ...task, text: newTask } : task)));
+            // Reset 'editingTask' state to null, indicating no task is being edited
+            setEditingTask(null);
+            // Reset 'newTask' state to an empty string
+            setNewTask("");
+        }
+    };
+
+    // Function to toggle the completion status of a task
+    const toggleCompletion = (id) => {
+        // Update the 'tasks' state by mapping over the tasks and toggling the 'completed' status of the task with the given ID
+        setTasks(tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)));
+    };
+
+    return (
+        <main className="flex min-h-screen flex-col items-center justify-between p-24">
+            <div>
+                {/* Header for the to-do list */}
+                <h1 className="text-3xl font-bold">Next.JS To-Do List</h1>
+                {/* Input field for entering new tasks */}
+                <div className="mt-5 flex items-center">
+                    <input
+                        type="text" // Set the input type to text
+                        value={newTask} // Bind the input value to 'newTask' state
+                        onChange={(e) => setNewTask(e.target.value)} // Update 'newTask' state on input change
+                        className="h-10 rounded-md text-black ps-3 focus:outline-none focus:ring-0 focus:border-blue-500"
+                        placeholder="Write todo"
+                    />
+                    {/* Button to add a new task or update an existing task */}
+                    <button className="bg-blue-500 h-10 w-10 rounded-md ms-2 flex justify-center items-center" onClick={editingTask ? updateTask : addTask}>
+                        {editingTask ? <FaSave size={20} /> : <FaPlusCircle size={20} />}{" "}
+                    </button>
+                </div>
+                {/* Unordered list to display the tasks */}
+                <ul className="mt-10">
+                    {/* Map over the 'tasks' state to create a list item for each task */}
+                    {tasks.map((task) => (
+                        <li key={task.id} className={`bg-gray-900 p-3 rounded-md mb-3 flex justify-between items-center ${task.completed ? "line-through" : ""}`}>
+                            {/* Task text with a strikethrough if the task is completed */}
+                            <span className={`me-2 font-semibold ${task.completed ? "text-gray-500" : ""}`}>{task.text}</span>
+                            {/* Buttons for completing, editing, and deleting tasks */}
+                            <div className="flex gap-2">
+                                <button className="bg-green-500 h-10 w-10 rounded-md flex justify-center items-center" onClick={() => toggleCompletion(task.id)}>
+                                    <FaCheckCircle />
+                                </button>
+                                <button className="bg-blue-500 h-10 w-10 rounded-md flex justify-center items-center" onClick={() => startEditing(task)}>
+                                    <FaEdit />
+                                </button>
+                                <button className="bg-red-500 h-10 w-10 rounded-md flex justify-center items-center" onClick={() => deleteTask(task.id)}>
+                                    <FaTrash />
+                                </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </main>
+    );
 }
